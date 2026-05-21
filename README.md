@@ -8,9 +8,9 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v0.2.20 | [`v0.2.20`](https://github.com/chainguard-actions/lcov-reporter-action/tree/v0.2.20) | — |
-| v0.2.21 | [`v0.2.21`](https://github.com/chainguard-actions/lcov-reporter-action/tree/v0.2.21) | — |
-| v0.3.1 | [`v0.3.1`](https://github.com/chainguard-actions/lcov-reporter-action/tree/v0.3.1) | — |
+| v0.2.20 | [`v0.2.20`](https://github.com/chainguard-actions/romeovs--lcov-reporter-action/tree/v0.2.20) | — |
+| v0.2.21 | [`v0.2.21`](https://github.com/chainguard-actions/romeovs--lcov-reporter-action/tree/v0.2.21) | — |
+| v0.3.1 | [`v0.3.1`](https://github.com/chainguard-actions/romeovs--lcov-reporter-action/tree/v0.3.1) | — |
 
 ## Privacy
 
