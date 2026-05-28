@@ -23094,8 +23094,10 @@ async function main$1() {
 	const githubClient = new github_2(token);
 	const lcovFile = core$1.getInput("lcov-file") || "./coverage/lcov.info";
 	const baseFile = core$1.getInput("lcov-base");
-	const shouldFilterChangedFiles = core$1.getInput("filter-changed-files").toLowerCase() === 'true';
-	const shouldDeleteOldComments = core$1.getInput("delete-old-comments").toLowerCase() === 'true';
+	const shouldFilterChangedFiles =
+		core$1.getInput("filter-changed-files").toLowerCase() === "true";
+	const shouldDeleteOldComments =
+		core$1.getInput("delete-old-comments").toLowerCase() === "true";
 	const title = core$1.getInput("title");
 
 	const raw = await fs.promises.readFile(lcovFile, "utf-8").catch(err => null);
