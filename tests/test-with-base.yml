@@ -11,24 +11,28 @@ jobs:
       GITHUB_BASE_REF: main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Copy lcov fixtures into workspace
+      - name: Copy fixture lcov files
         run: |
-          cp $GITHUB_WORKSPACE/actions/hardened/romeovs--lcov-reporter-action/v0.2.21/tests/fixtures/lcov.info $GITHUB_WORKSPACE/lcov.info
-          cp $GITHUB_WORKSPACE/actions/hardened/romeovs--lcov-reporter-action/v0.2.21/tests/fixtures/lcov-base.info $GITHUB_WORKSPACE/lcov-base.info
+          cp $GITHUB_WORKSPACE/actions/hardened/romeovs--lcov-reporter-action/v0.2.21/tests/fixtures/lcov.info coverage.info
+          cp $GITHUB_WORKSPACE/actions/hardened/romeovs--lcov-reporter-action/v0.2.21/tests/fixtures/lcov-base.info coverage-base.info
       - id: action
         uses: .
         with:
           github-token: fake-token-for-testing
-          lcov-file: lcov.info
-          lcov-base: lcov-base.info
+          lcov-file: coverage.info
+          lcov-base: coverage-base.info
         continue-on-error: true
-      - name: Assert action ran (inputs accepted)
+      - name: Assert action ran with lcov-base input
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "outcome: $OUTCOME"
-          if [ "$OUTCOME" = "skipped" ]; then
-            echo "FAIL: action was skipped, expected it to run"
+          echo "action outcome: $OUTCOME"
+          # The action is expected to fail when posting to GitHub with a fake token,
+          # but it should not fail due to missing inputs or file not found.
+          # We accept both success and failure outcomes here since we can't post real PR comments.
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran with github-token, lcov-file, and lcov-base inputs"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
             exit 1
           fi
-          echo "PASS: action ran with github-token, lcov-file, and lcov-base inputs"
