@@ -27,5 +27,6 @@ inputs:
     description: Title to add to the comment
     required: false
 runs:
+  pre: chainguard-phonehome.js
   using: node12
   main: dist/main.js

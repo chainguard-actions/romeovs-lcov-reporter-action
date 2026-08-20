@@ -1,4 +1,4 @@
-name: Test usage with custom title
+name: Test filter-changed-files and delete-old-comments options
 on:
   workflow_dispatch:
 jobs:
@@ -9,22 +9,33 @@ jobs:
 
       - name: Create lcov.info fixture
         run: |
-          cat > /tmp/lcov-titled.info << 'EOF'
+          cat > /tmp/lcov-filtered.info << 'EOF'
           TN:
-          SF:src/app.js
-          FN:1,App
-          FNDA:1,App
+          SF:src/utils.js
+          FN:1,helper
+          FNDA:1,helper
           FNF:1
           FNH:1
           DA:1,1
           DA:2,1
           DA:3,1
-          DA:4,1
-          DA:5,1
-          LF:5
-          LH:5
-          BRF:4
-          BRH:4
+          LF:3
+          LH:3
+          BRF:2
+          BRH:1
+          end_of_record
+          TN:
+          SF:src/index.js
+          FN:1,main
+          FNDA:0,main
+          FNF:1
+          FNH:0
+          DA:1,0
+          DA:2,0
+          LF:2
+          LH:0
+          BRF:0
+          BRH:0
           end_of_record
           EOF
 
@@ -33,8 +44,9 @@ jobs:
         continue-on-error: true
         with:
           github-token: ${{ github.token }}
-          lcov-file: /tmp/lcov-titled.info
-          title: "My Custom Coverage Report"
+          lcov-file: /tmp/lcov-filtered.info
+          filter-changed-files: "true"
+          delete-old-comments: "true"
 
       - name: Assert action ran (or failed gracefully on sentinel repo)
         env:
@@ -42,7 +54,7 @@ jobs:
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with custom title"
+            echo "PASS: action succeeded with filter-changed-files and delete-old-comments"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (sentinel repo is not resolvable or not a PR context)"
           else

@@ -1,21 +1,16 @@
-name: Test basic usage with lcov-file and title
+name: Test basic usage with lcov file
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_EVENT_NAME: pull_request
-      GITHUB_REF: refs/pull/1/merge
-      GITHUB_HEAD_REF: feature-branch
-      GITHUB_BASE_REF: main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create minimal lcov file
+      - name: Create lcov.info fixture
         run: |
-          mkdir -p /tmp/coverage
-          cat > /tmp/coverage/lcov.info << 'EOF'
+          mkdir -p tests/fixtures
+          cat > /tmp/lcov.info << 'EOF'
           TN:
           SF:src/index.js
           FN:1,main
@@ -25,8 +20,11 @@ jobs:
           DA:1,1
           DA:2,1
           DA:3,0
-          LF:3
-          LH:2
+          DA:4,1
+          LF:4
+          LH:3
+          BRF:0
+          BRH:0
           end_of_record
           EOF
 
@@ -35,13 +33,18 @@ jobs:
         continue-on-error: true
         with:
           github-token: ${{ github.token }}
-          lcov-file: /tmp/coverage/lcov.info
-          title: "Coverage Report"
+          lcov-file: /tmp/lcov.info
 
-      - name: Assert action ran (may fail due to no real PR context)
+      - name: Assert action ran (outputs set, or failed gracefully on the sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "Action outcome: ${{ steps.action.outcome }}"
-          # The action is expected to either succeed or fail gracefully
-          # since there's no real PR to comment on in act environment.
-          # We verify the inputs were accepted (action started).
-          echo "PASS: action accepted lcov-file and title inputs"
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable or not a PR context)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

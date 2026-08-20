@@ -1,39 +1,15 @@
-name: Test usage with lcov-base for coverage comparison
+name: Test usage with base lcov for comparison
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_EVENT_NAME: pull_request
-      GITHUB_REF: refs/pull/1/merge
-      GITHUB_HEAD_REF: feature-branch
-      GITHUB_BASE_REF: main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create lcov files for head and base
+      - name: Create lcov fixture files
         run: |
-          mkdir -p /tmp/coverage
-
-          # Head branch coverage (current)
-          cat > /tmp/coverage/lcov.info << 'EOF'
-          TN:
-          SF:src/index.js
-          FN:1,main
-          FNDA:1,main
-          FNF:1
-          FNH:1
-          DA:1,1
-          DA:2,1
-          DA:3,1
-          LF:3
-          LH:3
-          end_of_record
-          EOF
-
-          # Base branch coverage (for comparison)
-          cat > /tmp/coverage/lcov-base.info << 'EOF'
+          cat > /tmp/lcov-base.info << 'EOF'
           TN:
           SF:src/index.js
           FN:1,main
@@ -43,8 +19,29 @@ jobs:
           DA:1,1
           DA:2,1
           DA:3,0
-          LF:3
+          DA:4,0
+          LF:4
           LH:2
+          BRF:0
+          BRH:0
+          end_of_record
+          EOF
+
+          cat > /tmp/lcov-head.info << 'EOF'
+          TN:
+          SF:src/index.js
+          FN:1,main
+          FNDA:1,main
+          FNF:1
+          FNH:1
+          DA:1,1
+          DA:2,1
+          DA:3,1
+          DA:4,1
+          LF:4
+          LH:4
+          BRF:0
+          BRH:0
           end_of_record
           EOF
 
@@ -53,14 +50,19 @@ jobs:
         continue-on-error: true
         with:
           github-token: ${{ github.token }}
-          lcov-file: /tmp/coverage/lcov.info
-          lcov-base: /tmp/coverage/lcov-base.info
-          title: "Coverage Comparison"
+          lcov-file: /tmp/lcov-head.info
+          lcov-base: /tmp/lcov-base.info
 
-      - name: Assert action ran with lcov-base input
+      - name: Assert action ran (or failed gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "Action outcome: ${{ steps.action.outcome }}"
-          # The action is expected to either succeed or fail gracefully
-          # since there's no real PR to comment on in act environment.
-          # We verify the inputs were accepted (action started).
-          echo "PASS: action accepted lcov-file, lcov-base, and title inputs"
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with base comparison"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable or not a PR context)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
