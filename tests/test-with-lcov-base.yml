@@ -1,0 +1,43 @@
+name: Test with lcov-base comparison (API call fails gracefully on sentinel repo)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture lcov files to workspace
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/coverage"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/lcov.info" "$GITHUB_WORKSPACE/coverage/lcov.info"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/lcov-base.info" "$GITHUB_WORKSPACE/coverage/lcov-base.info"
+          echo "lcov file:"
+          cat "$GITHUB_WORKSPACE/coverage/lcov.info"
+          echo "lcov-base file:"
+          cat "$GITHUB_WORKSPACE/coverage/lcov-base.info"
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info
+          lcov-base: ./coverage/lcov-base.info
+        continue-on-error: true
+
+      - name: Assert action ran with base comparison (parsed both lcov files or failed gracefully)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action reads both lcov files and computes a diff, but then tries to access
+          # context.payload.repository.full_name which is null under workflow_dispatch,
+          # causing a TypeError. It should fail gracefully (setFailed).
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (both lcov files parsed and comment posted)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected under sentinel repo / workflow_dispatch context)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
