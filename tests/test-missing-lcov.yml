@@ -1,0 +1,22 @@
+name: Test missing lcov file (graceful exit)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Ensure no lcov file exists at the default path
+      - name: Remove any existing coverage directory
+        run: rm -rf coverage
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          lcov-file: ./coverage/lcov.info
+
+      - name: Assert action exited gracefully (no failure)
+        run: |
+          echo "PASS: action completed without failure when lcov file is missing"

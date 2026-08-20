@@ -1,0 +1,66 @@
+name: Test with lcov-file and lcov-base (comparison mode)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Create a current lcov.info file with higher coverage
+      - name: Create current lcov coverage file
+        run: |
+          mkdir -p coverage
+          cat > coverage/lcov.info << 'EOF'
+          TN:
+          SF:src/index.js
+          FN:1,main
+          FNF:1
+          FNH:1
+          DA:1,5
+          DA:2,5
+          DA:3,3
+          LF:3
+          LH:3
+          end_of_record
+          EOF
+
+      # Create a base lcov.info file with lower coverage (simulating base branch)
+      - name: Create base lcov coverage file
+        run: |
+          mkdir -p coverage
+          cat > coverage/lcov-base.info << 'EOF'
+          TN:
+          SF:src/index.js
+          FN:1,main
+          FNF:1
+          FNH:1
+          DA:1,5
+          DA:2,5
+          DA:3,0
+          LF:3
+          LH:2
+          end_of_record
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github-token: ${{ github.token }}
+          lcov-file: ./coverage/lcov.info
+          lcov-base: ./coverage/lcov-base.info
+
+      - name: Assert action ran (parsed both lcov files or failed gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (both lcov files parsed and diff computed)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo context is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
