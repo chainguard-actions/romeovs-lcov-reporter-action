@@ -12,6 +12,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v0.2.20 | [`v0.2.20`](https://github.com/chainguard-actions/romeovs-lcov-reporter-action/tree/v0.2.20) | [`68b59a6`](https://github.com/romeovs/lcov-reporter-action/commit/68b59a6f0fa4f74869288a9367077a4ae852c954) |
 | v0.2.21 | [`v0.2.21`](https://github.com/chainguard-actions/romeovs-lcov-reporter-action/tree/v0.2.21) | [`9f75fe6`](https://github.com/romeovs/lcov-reporter-action/commit/9f75fe6f72f1d8b0822399a67d439c91d7ca194b) |
 | v0.3.1 | [`v0.3.1`](https://github.com/chainguard-actions/romeovs-lcov-reporter-action/tree/v0.3.1) | [`dda1c9b`](https://github.com/romeovs/lcov-reporter-action/commit/dda1c9b1fa1622b225e9acd87a248751dbcc6ada) |
+| v0.4.0 | [`v0.4.0`](https://github.com/chainguard-actions/romeovs-lcov-reporter-action/tree/v0.4.0) | [`87a815f`](https://github.com/romeovs/lcov-reporter-action/commit/87a815f34ec27a5826abba44ce09bbc688da58fd) |
 
 ## Privacy
 
