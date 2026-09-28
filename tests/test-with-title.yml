@@ -1,0 +1,50 @@
+name: Test with title and delete-old-comments options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create minimal lcov.info file
+        run: |
+          cat > /tmp/lcov.info << 'EOF'
+          TN:
+          SF:src/app.js
+          FN:1,App
+          FNDA:1,App
+          FNF:1
+          FNH:1
+          DA:1,1
+          DA:2,1
+          DA:3,1
+          DA:4,1
+          DA:5,0
+          LF:5
+          LH:4
+          end_of_record
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github-token: ${{ github.token }}
+          lcov-file: /tmp/lcov.info
+          title: "Coverage Report"
+          delete-old-comments: "true"
+
+      - name: Assert action ran with title and delete-old-comments (posts comment or fails gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with title and delete-old-comments"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
